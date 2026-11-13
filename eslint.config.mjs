@@ -20,6 +20,7 @@ const eslintConfig = defineConfig([
       "react-hooks/set-state-in-effect": "off",
       "react-hooks/static-components": "warn",
       "react-hooks/exhaustive-deps": "warn",
+      "react-hooks/refs": "warn",
       "jsx-a11y/alt-text": "warn",
     },
   },

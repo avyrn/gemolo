@@ -17,6 +17,7 @@ import { useStore } from '@/lib/store';
 import { useAuth } from '@/lib/auth/AuthContext';
 
 const AUTH_ROUTES = ['/auth/login', '/auth/register'];
+const PUBLIC_ROUTES = ['/', '/wiki', '/knowledge', '/quiz', '/map'];
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const { sosOpen } = useStore();
@@ -25,13 +26,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   const isAuthRoute = AUTH_ROUTES.some((r) => pathname.startsWith(r));
+  const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
+  const isLandingPage = pathname === '/';
 
   // Route protection
   useEffect(() => {
     if (isLoading) return;
 
-    if (!account && !isAuthRoute) {
-      // Not logged in → send to login
+    if (!account && !isAuthRoute && !isPublicRoute) {
+      // Not logged in and accessing protected page → send to login
       router.push('/auth/login');
     } else if (account && !isOnboardingComplete && !isAuthRoute) {
       // Logged in but onboarding not done → send to register
@@ -40,7 +43,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       // Fully set up → redirect away from auth pages
       router.push('/');
     }
-  }, [isLoading, account, isOnboardingComplete, pathname, isAuthRoute]);
+  }, [isLoading, account, isOnboardingComplete, pathname, isAuthRoute, isPublicRoute, router]);
 
   // Loading spinner
   if (isLoading) {
@@ -51,12 +54,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         background: 'var(--color-bg)',
       }}>
         <div style={{
-          width: 48, height: 48, borderRadius: 12,
-          background: 'linear-gradient(135deg, #2D7DD2, #1A5FAA)',
-          animation: 'sos-pulse 1.5s infinite',
+          width: 44, height: 44, borderRadius: 9999,
+          background: 'var(--color-primary)',
+          animation: 'pulse 1.5s infinite',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <span style={{ fontSize: '1.5rem' }}>♥</span>
+          <span style={{ color: '#FAF9F6', fontSize: '1rem', fontWeight: 700 }}>●</span>
         </div>
       </div>
     );
@@ -67,15 +70,25 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  // Not authed or onboarding pending — render nothing (redirect happens above)
-  if (!account || !isOnboardingComplete) return null;
+  // Landing page — full-width Scandinavian layout without left sidebar constrain
+  if (isLandingPage) {
+    return (
+      <div className="w-full min-h-screen bg-[#FAF9F6] text-[#141413]">
+        {children}
+        {sosOpen && <SOSModal />}
+      </div>
+    );
+  }
 
-  // Full app shell
+  // Protected route check
+  if (!account && !isPublicRoute) return null;
+
+  // Full inner app shell
   return (
     <div className="app-layout">
       <Navbar />
       <Sidebar />
-      <main className="main-content">
+      <main className="main-content" style={{ marginLeft: 'var(--sidebar-width)', marginTop: 'var(--navbar-height)', minHeight: 'calc(100vh - var(--navbar-height))' }}>
         {children}
       </main>
       <BottomNav />
