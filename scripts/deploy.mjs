@@ -52,9 +52,10 @@ async function main() {
     process.exit(1);
   }
 
-  // 5. Опциональный вызов Vercel Deploy Hook, если настроен в .env.local
+  // 5. Вызов Vercel Deploy Hook
+  const DEFAULT_HOOK = 'https://api.vercel.com/v1/integrations/deploy/prj_5CT8zyNQDYlhXkjJUqnZ0vur3WE8/8BUwJuNG9V';
   const envPath = resolve(process.cwd(), '.env.local');
-  let deployHookUrl = null;
+  let deployHookUrl = DEFAULT_HOOK;
   if (existsSync(envPath)) {
     const envContent = readFileSync(envPath, 'utf-8');
     const match = envContent.match(/VERCEL_DEPLOY_HOOK_URL\s*=\s*([^\r\n]+)/);
